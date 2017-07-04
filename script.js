@@ -1,200 +1,191 @@
 let canvas = document.getElementById("myCanvas");
 let ctx = canvas.getContext("2d");
 
-const squareSize = 10;
-const speed = 10;
-const appleColor = "#ff0000";
-const snakeColor = "#00ff99";
 const midX = canvas.width / 2;
 const midY = canvas.height / 2;
 
+const speed = 10;
+
 class Square {
   constructor(x, y, color) {
+    this.size = 10;
     this.x = x;
     this.y = y;
     this.color = color;
   }
-}
 
-class Snake {
-  constructor() {
-    this.head = new Square(midX, midY, snakeColor);
-    this.tail = [];
-    this.headMoves = [];
-    this.snakeSize = 0;
-    this.direction = 0; // 0 - left 1 - top 2 - right 3 - down
-    this.appleFlag = true;
-
-    // Add keyboard arrow control
-    document.addEventListener("keydown", (e) => this.handleKeyDown(e));
-  }
-
-  // Inclusive
-  getRandomNumber(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-  }
-
-  // Multiplicities of speed
-  getAppleX() {
-    return Math.floor(this.getRandomNumber(0, canvas.width) / speed) * speed;
-  }
-
-  // Multiplicities of speed
-  getAppleY() {
-    return Math.floor(this.getRandomNumber(0, canvas.height) / speed) * speed;
-  }
-
-  spawnApple() {
-    let x = this.getAppleX();
-    let y = this.getAppleY();
-    this.apple = new Square(x, y, appleColor);
-  }
-
-  drawApple() {
-    ctx.beginPath();
-    ctx.rect(this.apple.x, this.apple.y, squareSize, squareSize);
-    ctx.fillStyle = this.apple.color;
-    ctx.fill();
-    ctx.closePath();
-  }
-
-  checkAppleEat() {
-    return this.head.x === this.apple.x && this.head.y === this.apple.y;
-  }
-
-  eatApple() {
-    this.snakeSize++;
-    this.appleFlag = true;
-    let snakeSegment = new Square(this.head.x, this.head.y, snakeColor);
-    this.tail.push(snakeSegment);
-    console.log(this.tail);
-  }
-
-  checkLose() {
-    if(
-      this.head.x < 0 ||
-      this.head.x + squareSize > canvas.width ||
-      this.head.y < 0 ||
-      this.head.y + squareSize > canvas.height
-    ) {
-      return true;
-    }
-    return false;
-  }
-
-  reload() {
-    alert("You lost :(");
-    location.reload();
-  }
-
-  handleKeyDown(e) {
-    // No moving the page with arrow keys
-    if(e.keyCode === 37 || e.keyCode === 38 || e.keyCode === 39 || e.keyCode === 40) {
-      e.preventDefault();
-    }
-    switch(e.keyCode) {
+  move(dir) {
+    switch (dir) {
+      // Move left
       case 37:
-        this.direction = 0;
+        this.x += -speed;
         break;
+      // Move Up
       case 38:
-        this.direction = 1;
+        this.y += -speed;
         break;
+      // Move right
       case 39:
-        this.direction = 2;
+        this.x += speed;
         break;
+      // Move Down
       case 40:
-        this.direction = 3;
+        this.y += speed;
         break;
-      default:
-        console.log("What the hell are you pressing in a snake game?");
     }
-  }
-
-  move(square) {
-    switch(this.direction) {
-      case 0:
-        square.x += -speed;
-        break;
-      case 1:
-        square.y += -speed;
-        break;
-      case 2:
-        square.x += speed;
-        break;
-      case 3:
-        square.y += speed;
-        break;
-      default:
-        console.log("???");
-    }
-  }
-
-  moveTail() {
-    for(let i = 0; i < this.tail.length; i++) {
-      let square = this.tail[i];
-      let segmentDirection = this.headMoves[i];
-      switch(segmentDirection) {
-        case 0:
-          square.x += -speed;
-          break;
-        case 1:
-          square.y += -speed;
-          break;
-        case 2:
-          square.x += speed;
-          break;
-        case 3:
-          square.y += speed;
-          break;
-        default:
-          console.log("ehh");
-      }
-    }
-  }
-
-  drawTail() {
-    for(let square of this.tail) {
-      ctx.beginPath();
-      ctx.rect(square.x, square.y, squareSize, squareSize);
-      ctx.fillStyle = snakeColor;
-      ctx.fill();
-      ctx.closePath();
-    }
-  }
-
-  drawHead() {
-    ctx.beginPath();
-    ctx.rect(this.head.x, this.head.y, squareSize, squareSize);
-    ctx.fillStyle = snakeColor;
-    ctx.fill();
-    ctx.closePath();
   }
 
   draw() {
     ctx.beginPath();
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    if(this.appleFlag) {
-      this.spawnApple();
-      this.appleFlag = false;
-    }
-    this.drawApple();
-    this.move(this.head);
-    this.headMoves.push(this.direction);
-    if(this.checkLose()) {
-      this.reload();
-    }
-    this.drawHead();
-    if(this.checkAppleEat()) {
-      this.eatApple();
-      this.headMoves.push(this.headMoves.length - 1);
-    }
-    this.moveTail();
-    this.drawTail();
+    ctx.rect(this.x, this.y, this.size, this.size);
+    ctx.fillStyle = this.color;
+    ctx.fill();
     ctx.closePath();
-    console.log(this.headMoves);
-    this.headMoves.shift();
+  }
+}
+
+// Snake Game
+class Snake {
+  constructor() {
+    this.headX = midX;
+    this.headY = midY;
+    this.snakeColor = "#00ff99";
+    this.head = new Square(this.headX, this.headY, this.snakeColor);
+    this.headDirection = 37;
+    this.headDirections = [];
+    this.tail = [];
+    this.snakeSize = 0;
+    this.appleEatenMoves = 0;  // How many moves were made since the apple was eaten
+    this.appleEatenMovesFlag = false;
+    this.spawnAppleFlag = true;
+    this.wasAppleEaten = false;
+
+    document.addEventListener("keydown", (e) => this.handleKeyDown(e));
+  }
+
+  handleKeyDown(e) {
+    // Prevent scrolling
+    if(e.keyCode === 37 || e.keyCode === 38 || e.keyCode === 39 || e.keyCode === 40) {
+      e.preventDefault();
+      this.headDirection = e.keyCode;
+    } else {
+      console.log("What are you pressing? This is a snake game! Use arrows!");
+    }
+  }
+
+  clear() {
+    ctx.beginPath();
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.closePath();
+  }
+
+  moveHead() {
+    switch (this.headDirection) {
+      case 37:
+        this.head.move(37);
+        break;
+      case 38:
+        this.head.move(38);
+        break;
+      case 39:
+        this.head.move(39);
+        break;
+      case 40:
+        this.head.move(40);
+        break;
+    }
+    if(this.snakeSize !== 0) {
+      this.headDirections.push(this.headDirection);
+    }
+  }
+
+  drawHead() {
+    this.head.draw();
+  }
+
+  // Inclusive
+  getRandomNum(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  getAppleX() {
+    return Math.floor(this.getRandomNum(0, canvas.width) / speed) * speed;
+  }
+
+  getAppleY() {
+    return Math.floor(this.getRandomNum(0, canvas.height) / speed) * speed;
+  }
+
+  // Create new apple if there aren't any or if it has been eaten
+  spawnApple() {
+    if(this.spawnAppleFlag) {
+      let appleX = this.getAppleX();
+      let appleY = this.getAppleY();
+      this.apple = new Square(appleX, appleY, "#ff0000");
+      this.spawnAppleFlag = false;
+    }
+  }
+
+  drawApple() {
+    this.apple.draw();
+  }
+
+  eatApple() {
+    // If apple was eaten
+    if(this.apple.x === this.head.x && this.apple.y === this.head.y) {
+      this.snakeSize++;
+      this.spawnAppleFlag = true;
+      this.appleEatenMovesFlag = true;
+      this.prevAppleX = this.apple.x;
+      this.prevAppleY = this.apple.y;
+      this.wasAppleEaten = true;
+    }
+  }
+
+  handleSnakeSize() {
+    if(this.appleEatenMovesFlag) {
+      this.appleEatenMoves++;
+      if(this.appleEatenMoves === this.snakeSize && this.snakeSize !== 0) {
+        let snakeSegment = new Square(this.prevAppleX, this.prevAppleY, this.snakeColor);
+        this.tail.push(snakeSegment);
+        this.appleEatenMovesFlag = false;
+        this.appleEatenMoves = 0;
+      }
+    }
+  }
+
+  moveTail() {
+    console.log(this.headDirections);
+    for(let i = 0; i < this.tail.length; i++) {
+      console.log(this.headDirections[this.headDirections.length - 1 - i]);
+      let segmentDirection = this.headDirections[this.headDirections.length - 1 - i];
+      this.tail[i].move(segmentDirection);
+    }
+  }
+
+  drawTail() {
+    for(let segment of this.tail) {
+      segment.draw();
+    }
+  }
+
+  drawGame() {
+    this.clear();
+    this.moveHead();
+    this.drawHead();
+    this.drawTail();
+    this.moveTail();
+    this.spawnApple();
+    this.drawApple();
+    this.eatApple();
+    this.handleSnakeSize();
+
+    if(!this.wasAppleEaten) {
+      this.headDirections.shift();
+    }
+    this.wasAppleEaten = false;
   }
 }
 
 let snake = new Snake();
-setInterval(() => snake.draw(), 500);
+setInterval(() => snake.drawGame(), 100);
