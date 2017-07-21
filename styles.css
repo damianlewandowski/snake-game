@@ -1,0 +1,23 @@
+* {
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  background: #d6ebf2;
+}
+
+canvas {
+  border: 1px solid black;
+  background: #567d46;
+  display: block;
+  margin: 50px auto;
+}
+
+.block1 {
+  border: 3px solid blue;
+  display: inline-block;
+  width: 100px;
+  height: 100px;
+  margin: auto;
+}
