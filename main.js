@@ -22,7 +22,6 @@ class Square {
         this.y += this.size;
         break;
       default:
-        console.log("Shieeet");
         break;
     }
   }
@@ -172,7 +171,6 @@ class Snake {
       counter: 0,
       limit: this.headDirections.length + 1,
     };
-    console.log(snakeSegmentObj.directions);
     this.tailQueue.push(snakeSegmentObj);
 
     this.spawnApple();
@@ -197,7 +195,6 @@ class Snake {
     this.updateTailQueue();
     this.moveTail();
     this.drawTail();
-    console.log(this.tail);
   }
 }
 
