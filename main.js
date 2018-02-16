@@ -41,6 +41,10 @@ class Snake {
     this.canvas = document.getElementById('myCanvas');
     this.ctx = this.canvas.getContext('2d');
 
+    // Get handler to the score element
+    this.scoreHandler = document.getElementById("score");
+    this.scoreHandler.innerHTML = "Score: 0";
+
     // Set width and height of the game
     this.canvas.width = 500;
     this.canvas.height = 500;
@@ -53,7 +57,10 @@ class Snake {
     // Spawn apple at the beginning
     this.spawnApple();
 
-    this.head = new Square(0, 0, this.squareSize, this.snakeColor, this.ctx);
+    this.score = 0;
+
+    this.head = new Square(0, 0, this.squareSize, "#000", this.ctx);
+    // Start moving right
     this.headDirection = 39;
     this.headDirections = [39];
 
@@ -89,6 +96,7 @@ class Snake {
 
   checkHeadCollision() {
     if(this.head.x < 0 || this.head.x + this.squareSize > this.canvas.width || this.head.y < 0 || this.head.y + this.squareSize > this.canvas.height) {
+      this.resetScore();
       alert("You lost!");
       location.reload();
     }
@@ -162,6 +170,15 @@ class Snake {
     return this.apple.x === this.head.x && this.apple.y === this.head.y;
   }
 
+  incrementScore() {
+    ++this.score;
+    this.scoreHandler.innerHTML = "Score: " + this.score;
+  }
+
+  resetScore() {
+    this.score = 0;
+  }
+
   eatApple() {
     // Create new snake segment and add it to the tail queue
     let snakeSegment = new Square(this.apple.x, this.apple.y, this.squareSize, this.snakeColor, this.ctx);
@@ -187,6 +204,7 @@ class Snake {
     this.updateTailDirections();
     if(this.checkAppleEat()) {
       this.eatApple();
+      this.incrementScore();
     } else {
       this.headDirections.shift();
     }
