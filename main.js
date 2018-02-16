@@ -54,6 +54,20 @@ class Snake {
     this.snakeColor = '#00ff99';
     this.appleColor = '#ff0000';
 
+    // Create new audio element and load sound into it
+    this.sound = document.createElement("audio");
+    this.sound.src = "eat-apple-sound.wav";
+    this.sound.setAttribute("preload", "auto");
+    this.sound.setAttribute("controls", "none");
+    this.sound.style.display = "none";
+    document.body.appendChild(this.sound);
+    this.play = function(){
+        this.sound.play();
+    }
+    this.stop = function(){
+        this.sound.pause();
+    }
+
     // Spawn apple at the beginning
     this.spawnApple();
 
@@ -205,6 +219,7 @@ class Snake {
     if(this.checkAppleEat()) {
       this.eatApple();
       this.incrementScore();
+      this.sound.play();
     } else {
       this.headDirections.shift();
     }
